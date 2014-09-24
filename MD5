@@ -1,0 +1,13 @@
+187a1f4dd4d490bcc97f0c7797dce117 *DESCRIPTION
+8fe249f6de1c3b494356d3b7651b87bd *NAMESPACE
+69b7574269066b27bf512fe03269d78d *R/SimplicialCubature.R
+1470c3dd8e1034913feededc2353bc7f *R/adsimp.R
+886eae79de9b91a142580ef749dcb990 *R/grnmol.R
+89ea12b44068c2efe1e1b3e2d74c134a *man/CanonicalSimplex.Rd
+2edc5166aeb68c4fa1967f54cc37ea3b *man/LasserreAvrachenkov.Rd
+0fe8ac7defb1dc996ee98953fafc261c *man/SimplicialCubature-package.Rd
+928cb13084d23d6c5352310068b98276 *man/adaptIntegrateSimplex.Rd
+699635543288e9dc59bda17b0d5e1e23 *man/adsimp.Rd
+6f42f2c00c4a2b172aab973ad05caa25 *man/definePoly.Rd
+5dfc37871e1fb6983ede542f364d8bc3 *man/grnmol.Rd
+014dd27571abe5da10516eb2282c440f *man/integrateSimplexPolynomial.Rd

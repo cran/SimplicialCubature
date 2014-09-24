@@ -1,0 +1,2 @@
+export(adaptIntegrateSimplex, integrateSimplexPolynomial, adsimp, grnmol, definePoly, evalPoly, printPoly, 
+CanonicalSimplex, UnitSimplex, SimplexVolume, JacobianS2Canonical )
