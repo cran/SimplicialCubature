@@ -1,7 +1,8 @@
 \name{CanonicalSimplex}
 \alias{CanonicalSimplex}
-\alias{UnitSimplex}
+\alias{UnitSimplexV}
 \alias{SimplexVolume}
+\alias{SimplexSurfaceArea}
 \alias{JacobianS2Canonical}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
@@ -13,8 +14,9 @@ simplices in n-dimensional space.
 }
 \usage{
 CanonicalSimplex(n)
-UnitSimplex(n)
+UnitSimplexV(n)
 SimplexVolume(S)
+SimplexSurfaceArea(S3)
 JacobianS2Canonical(S2)
 }
 %- maybe also 'usage' for other objects documented here.
@@ -28,7 +30,11 @@ give the vertices of the simplex.
 }
   \item{S2}{
 an n x (m+1) matrix specifying a single m-dimensional simplex, with m <= n; 
-the columns S[,1],..,S[,m+1] give the vertices of the simplex.
+the columns S2[,1],..,S2[,m+1] give the vertices of the simplex.
+}
+  \item{S3}{
+an n x n matrix specifying a single (n-1)-dimensional simplex inside n-dimensional space; 
+the columns S3[,1],..,S3[,n] give the vertices of the simplex.
 }
 }
 \value{
@@ -37,17 +43,19 @@ CanonicalSimplex(n) gives the simplex with columns being
 vertices of the canonical simplex in n-dimensions:
 the n-dim. simplex with vertices (0,0,...,0) and e[1],...,e[n]. A vector
 (u[1],...,u[n]) is in the canonical simplex if 0 <= u[i] <= 1 for all i
-and sum(u) <= 1.  UnitSimplex(n) gives the vertices of the
+and sum(u) <= 1.  UnitSimplexV(n) gives the vertices (V-representation) of the
 unit simplex, namely  e[1],...,e[n].
 A vector (u[1],...,u[n]) is in the unit simplex if 0 <= u[i] <= 1 for all i
-and sum(u) == 1. SimplexVolume(S) returns the n-dim. volume of S;
+and sum(u) == 1. SimplexVolume(S) returns the n-dim. volume of S and
+SimplexSurfaceArea(S3) computes the (n-1)-dim. surface area of S3.
 JacobianS2Canonical(S2) returns the Jacobian of the transformation
 from an m-dim. simplex S2 to the m-dim. canonical simplex.
 }
 \examples{
 CanonicalSimplex(3)
-UnitSimplex(3)
-SimplexVolume( CanonicalSimplex(3) )  
-JacobianS2Canonical( UnitSimplex(3) )
+UnitSimplexV(3)
+SimplexVolume( CanonicalSimplex(3) ) 
+SimplexSurfaceArea( UnitSimplexV(3) ) 
+JacobianS2Canonical( UnitSimplexV(3) )
 
 }

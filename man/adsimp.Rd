@@ -1,5 +1,6 @@
 \name{adsimp}
 \alias{adsimp}
+\alias{adsimp.return.message}
 \alias{SMPCHC}
 \alias{SMPDFS}
 \alias{SMPRMS}
@@ -16,12 +17,13 @@ integrate over a simplex.  The other functions listed below are all called by
 adsimp.  These functions are used internally; use at your own risk.
 }
 \usage{
-adsimp(ND, VRTS, NF, F, MXFS, EA, ER, KEY, partitionInfo = FALSE)
+adsimp(ND, VRTS, NF, F, MXFS, EA, ER, KEY, partitionInfo = FALSE )
+adsimp.return.message( rcode )
 SMPCHC(ND, NF, MXFS, EA, ER, SBS, KEY)
 SMPDFS(ND, NF, F, TOP, SBS, VRTS)
 SMPRMS(N, KEY)
 SMPRUL(ND, VRTS, VOL, NF, F, G, W, PTS)
-SMPSAD(ND, NF, F, MXFS, EA, ER, KEY, RCLS, SBS, VRTS, partitionInfo)
+SMPSAD(ND, NF, F, MXFS, EA, ER, KEY, RCLS, SBS, VRTS, partitionInfo )
 SMPSMS(N, VERTEX, NF, F, G)
 }
 %- maybe also 'usage' for other objects documented here.
@@ -38,6 +40,9 @@ dimension of the function; F(x) has NF coordinates
   \item{F}{
 a function of ND variables, value F(x) has NF coordinates
 }
+  \item{rcode}{
+an integer return code from adsimp
+}
   \item{MXFS}{
 maximum number of function evaluations allowed
 }
@@ -51,7 +56,7 @@ requested relative error
 integration rule
 }
   \item{partitionInfo}{
-TRUE or FALSE, see adaptIntegrateSimplex
+TRUE or FALSE, controls whether or not the function returns information about the final partition.  See the comments in function adaptIntegrateSimplex().
 }
   \item{SBS}{
 number of subsimplices
@@ -80,7 +85,7 @@ number of terms in an integration rule
 }
 }
 \value{
-Not meant to be used directly, they called from function adaptIntegrateSimplex(...).
+Not meant to be used directly, these functions are generally called from function adaptIntegrateSimplex(...).
 }
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~

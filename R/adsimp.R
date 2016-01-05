@@ -319,6 +319,7 @@ FL <- max( AE > max( c(EA,ER*abs(VL))) );
 #
 #     End initialisation.
 #
+
 while ( (FL > 0) & (NV + DFCOST + 4*RCLS <= MXFS) ){
   #
   #     Begin loop while error is too large, and NV is not too large.
@@ -335,6 +336,7 @@ while ( (FL > 0) & (NV + DFCOST + 4*RCLS <= MXFS) ){
   #
   #[ VRTS, NEW ] <-  SMPDFS( ND, NF, F, ID, SBS, VRTS ); VI <- VOL(ID)/NEW;\
   b <- SMPDFS( ND, NF, F, ID, SBS, VRTS );   NEW <- b$NEW; VRTS <- b$VRTS
+
   VI <- VOL[ID]/NEW
   #
   #     Apply basic rule, and add new contributions to VL and AE.
@@ -343,11 +345,14 @@ while ( (FL > 0) & (NV + DFCOST + 4*RCLS <= MXFS) ){
   VOL <- c( VOL, rep(0.0,NEW-1) )
   VLS <- cbind( VLS, matrix(0.0,nrow=NF, ncol=NEW-1) )
   AES <- cbind( AES, matrix(0.0,nrow=NF, ncol=NEW-1))
-  for (K in c( ID, (SBS+1):(SBS+NEW-1) )) {
+  for (K in c( ID, (SBS+1):(SBS+NEW-1) )) {  
     VOL[K] <- VI;
     # [VLS(:,K), AES(:,K)] <- SMPRUL( ND, VRTS(:,:,K), VI, NF, F, G, W, PTS );
-    d <- SMPRUL( ND, VRTS[ , ,K], VI, NF, F, a$G, a$W, a$PTS ); VLS[ ,K] <- d$BASVAL; AES[ ,K] <- d$RGNERR
-    VL <- VL + VLS[ ,K]; AE <- AE + AES[ ,K]; NV <- NV + RCLS;
+    d <- SMPRUL( ND, VRTS[ , ,K], VI, NF, F, a$G, a$W, a$PTS ); 
+    VLS[ ,K] <- d$BASVAL; AES[ ,K] <- d$RGNERR
+    VL <- VL + VLS[ ,K]; 
+    AE <- AE + AES[ ,K]; 
+    NV <- NV + RCLS;
   }
   NV <- NV + DFCOST; SBS <- SBS + NEW - 1;
   #
@@ -525,6 +530,7 @@ SMPRUL <- function( ND, VRTS, VOL, NF, F, G, W, PTS ) {
 #
 #***end PROLOGUE SMPRUL
 #
+
 RTMN <- 1e-1;  SMALL <- 1e-12 ; ERRCOF <- 8;
 #
 #     Compute the rule values.
@@ -534,17 +540,18 @@ WTS <- nrow(W); RLS <- ncol(W); RULE <- matrix(0.0,nrow=NF,ncol=RLS)
 for (K in 1 : WTS) {
   if (PTS[K] > 0) { RULE <- RULE + VOL*SMPSMS( ND,VRTS,NF,F, G[ ,K] ) %*% W[K, ]; }
 }
+
 #
 #     Scale integral values and compute the error estimates.
 #
 BASVAL <- rep(0.0,NF); RGNERR <- rep(0.0,NF);
 for ( I in 1 : NF) { 
-  BASVAL[I] <-RULE[I,1]; NMBS <-abs( BASVAL[I] ); RT <-RTMN;
+  BASVAL[I] <- RULE[I,1]; NMBS <-abs( BASVAL[I] ); RT <-RTMN;
 #  for (K in RLS : -2 : 3) { 
   for (K in rev(seq(3,RLS,2))) {   
-    NMRL <-max( abs( RULE[I,K] ), abs( RULE[I,K-1] ) );
+    NMRL <- max( abs( RULE[I,K] ), abs( RULE[I,K-1] ) );
     if ( (NMRL > SMALL*NMBS) & (K < RLS ) )  { RT <-max( c(NMRL/NMCP, RT) ) }
-    RGNERR[I] <-max( c(NMRL, RGNERR[I]) ); NMCP <-NMRL;
+    RGNERR[I] <- max( c(NMRL, RGNERR[I]) ); NMCP <-NMRL;
   } 
   if ( (RT < 1) & (RLS > 3) ) { RGNERR[I] <- RT*NMCP }
   RGNERR[I] <- max( c(ERRCOF*RGNERR[I], SMALL*NMBS) );
@@ -596,7 +603,8 @@ SYMSMS <- rep(0.0,NF); G <- sort(G,decreasing=TRUE); pr <- 1;
 #     Compute integrand value for permutations of G
 #
 while (pr) { 
-  SYMSMS <- SYMSMS + F(VERTEX %*% G); pr <- 0;
+  SYMSMS <- SYMSMS + F(VERTEX %*% G)
+  pr <- 0
 #
 #     Find next distinct permuation of G and loop back for value.
 #     Permutations are generated in reverse lexicographic order.
@@ -610,7 +618,8 @@ while (pr) {
         G[L] <- G[I-L]; G[I-L] <- GL; if (G[L] > GI) { LX <- L; }
       }
       if (G[IX] <= GI) { IX <- LX; }
-      G[I] <- G[IX]; G[IX] <- GI; pr <- 1; break
+      G[I] <- G[IX]; G[IX] <- GI; 
+      pr <- 1; break
     }
   }
 }
@@ -844,6 +853,7 @@ for (K in 3 : RLS ) {
   W[ ,K] = W[ ,K] - W[ ,2:(K-1),drop=FALSE] %*% t(W[ ,2:(K-1),drop=FALSE]) %*% ( PTS*W[ ,K] )/NB
   W[ ,K] = W[ ,K]*sqrt( NB/sum(PTS*W[ ,K]^2) )
 }
+
 return( list( G=G, W=W, PTS=PTS ) ) }
 #
 #***End Smprms

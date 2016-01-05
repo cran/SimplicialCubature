@@ -61,7 +61,7 @@ integrateSimplexPolynomial( p1, S, method="GM" )
 p2 <- definePoly( c(5,-6), matrix( c(3,1,0,0,   0,0,0,7), nrow=2, byrow=TRUE)  )
 printPoly( p2 )
 integrateSimplexPolynomial( p2, S, method="GM" )  # correct answer  -1.352814e-05
-\donttest{integrateSimplexPolynomial( p2, S, method="LA" )  # correct answer  -1.352814e-05}
+integrateSimplexPolynomial( p2, S, method="LA" )  # correct answer  -1.352814e-05
 
 # integrate random polynomials and random simplices in different dimensions
 for (n in 3:5) {

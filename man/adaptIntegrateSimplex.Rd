@@ -1,5 +1,7 @@
 \name{adaptIntegrateSimplex}
 \alias{adaptIntegrateSimplex}
+\alias{integrate.vector.fn}
+\alias{original.coordinates}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 Integrate a general function over a simplex
@@ -12,6 +14,8 @@ f can be a vector valued function and S can be a list of simplices.
 \usage{
 adaptIntegrateSimplex(f, S, fDim = 1L, maxEvals = 10000L, absError = 0, tol = 1e-05, 
      integRule = 3L, partitionInfo = FALSE, ...)
+integrate.vector.fn( intervals, fDim, f, maxEvals, absError, tol, partitionInfo=FALSE  )
+original.coordinates( u, S  )           
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -44,12 +48,18 @@ a (2*integRule+1) degree integration rule is used in function adsimp.
 }
   \item{partitionInfo}{
 if FALSE, then only the results of the computations are returned.  
-If TRUE, then partition information is also returned.
+If TRUE, then partition information is also returned for the final subdivision of the region.
 This will require more memory, but sometimes that information can be useful
 for other purposes.
 }
   \item{\dots}{
 optional arguments to integrand function f(x,...)
+}
+  \item{intervals}{
+(1 x 2 x k) array of intervals for univariate integration
+}
+  \item{u}{
+point in m-dim. space
 }
 }
 \details{
@@ -62,7 +72,9 @@ the canonical simplex in m-dimensional space, using function adsimp on that `ful
 with the Jacobian of the transformation.  
 
 If m=1, the built-in R function integrate (based on QUADPACK 1-dimensional adaptive quadrature) 
-is used to evaluate the line integral.
+is used to evaluate the line integral.  Since it does not provide access to the final subdivision,
+partitionInfo=TRUE in the univariate case returns the original partition information.  So, if a fine
+parition is desired in the m=1 case, start with a fine partition. 
 }
 
 \value{A list containing:
@@ -81,7 +93,7 @@ is used to evaluate the line integral.
           if partitionInfo=TRUE, this array gives estimated values of the absolute error of each component of the integral on each 
                 subsimplex, see function adsimp for more details.}
     \item{subsimplicesVolume}{
-          if partitionInfo=TRUE, vector of volumes of subsimplices}
+          if partitionInfo=TRUE, vector of m-dim. volumes of subsimplices; this is not d-dim. volume if m < n.}
 
 }
 
@@ -120,14 +132,15 @@ f3 <- function( x, extra.arg ) { extra.arg*c(x[1]^3,x[3]^4) } # multiple of f2 a
 adaptIntegrateSimplex( f3, S, fDim=2, extra.arg=100 )  # correct answer 0.119047619 0.05952380952
 
 # integrate over lower dimensional simplices
-adaptIntegrateSimplex( f1, UnitSimplex(4) )  # answer =  0.01666667
+adaptIntegrateSimplex( f1, UnitSimplexV(4) )  # answer =  0.01666667
 
 f4 <- function(x) { 1 }
 #  2-dim integral, exact answer area of unit simplex = sqrt(3)/2 = 0.8660254...
-adaptIntegrateSimplex( f4, UnitSimplex(3) ) 
+adaptIntegrateSimplex( f4, UnitSimplexV(3) ) 
 
-# line integral over diamond, exact answer=arclength=4*sqrt(2)=5.656854...
+# line integral over diamond in 2-dim, exact answer=arclength=4*sqrt(2)=5.656854...
 S4 <- array( c( 1,0, 0,1,  0,1, -1,0,  -1,0, 0,-1,  0,-1, 1,0) , dim=c(2,2,4)  )
 adaptIntegrateSimplex( f4, S4 ) 
+adaptIntegrateSimplex( f4, S4, partitionInfo=TRUE ) 
 
 }

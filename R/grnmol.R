@@ -4,7 +4,7 @@ grnmol <- function( f, V, s ){
 #   Translated by John Nolan, jpnolan@american.edu, 21 Aug 2014
 #
 #   [Q nv] = grnmol( f, V, s )
-#     computes approximation to the integral of f over an s-simplex
+#     computes approximation to the integral of f over a simplex
 #     with vertices as columns of V, an n x (n+1) matrix, using
 #     order 1, 2, ..., s (degree 2s+1) Grundmann-Moler rules.
 #   Output Q is a vector approximations of degree 1, 3, ... 2s+1. 

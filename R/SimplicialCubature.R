@@ -1,7 +1,7 @@
 # SimplicialCubature - an R package to integrate over m-dimensional simplices in n-dimensions.
 #   Is is required that n >= 2, while the simplices can be of dimension m, 1 <= m <= n.
 #
-# Written by John Nolan,  American University, Aug-Sep 2014, 
+# Written by John Nolan,  American University, Aug-Sep 2014. Modified in Spring 2015. 
 #     e-mail jpnolan@american.edu
 # 
 # This research was supported by an agreement with Cornell University, Operations 
@@ -42,7 +42,7 @@
 #    The functions polyDefine, polyEval, and polyPrint are used to define,
 #    evaluate, and print a polynomial in coded form.  
 #
-#    The functions CanonicalSimplex, UnitSimplex, SimplexVolume, and 
+#    The functions CanonicalSimplex, UnitSimplexV, SimplexVolume, and 
 #    JacobianS2Canonical are utility routines to define the canonical
 #    simplex, the unit simples, volume of an n-dim. simplex in R^n,
 #    and the Jacobian of the transformation from an m-dim. simplex S2
@@ -53,8 +53,9 @@
 ################################################################################
 adaptIntegrateSimplex <- function( f, S, fDim=1L, maxEvals=10000L, absError=0.0, 
     tol=1.0e-5, integRule=3L, partitionInfo=FALSE, ... ) {
-# Adaptively integrate f(x) over a single simplex S in R^n, where S may be of
-# dimension 1 <= m <= n.
+# Adaptively integrate f(x) over one or more simplices in R^n, where 
+# S[1:n,1:m,1:nS] may be a single simplex or a list of simplices. 
+# The region of integration can be an m-dimensional simplex, 1 <= m <= n.
 #
 # When m=n, this is a wrapper function for Alan Genz's adsimp program to adaptively 
 # integrate a function f(x) over an n-dimensional simplex S.  f(x) can be vector valued
@@ -65,10 +66,10 @@ adaptIntegrateSimplex <- function( f, S, fDim=1L, maxEvals=10000L, absError=0.0,
 #
 # Input variables:
 #    f integrand function, returns a vector of length fDim
-#    S either a single n x (n+1) matrix, with S[,i] being the i-th vertex 
-#      of the simplex, or an n x (n+1) x m array of simplices, with S[,,i] 
+#    S either a single n x (m+1) matrix, with S[,i] being the i-th vertex 
+#      of the simplex, or an n x (m+1) x nS array of simplices, with S[,,i] 
 #      being the i-th simplex in the first form
-#    fDim integer that gives the dimension of function f
+#    fDim integer that gives the dimension of (the range of) function f
 #    maxEvals integer that gives an upper limit for how many evaluations of
 #      of f are allowed.  If this value is exceeded (or about to be exceeded),
 #      the return variable will contain a non-zero value.
@@ -90,10 +91,11 @@ adaptIntegrateSimplex <- function( f, S, fDim=1L, maxEvals=10000L, absError=0.0,
 #    if partitionInfo=TRUE, other information about the final partition/subdivision 
 #      of the region of integration is returned, see function adsimp for more details.
 
+if( !is.function(f) ) { stop("first argument is not a function" ) }
 if( is.matrix(S) )  { S <- array( S, dim=c(nrow(S),ncol(S),1)) }
-if( !is.array(S) || (length(dim(S)) != 3) ) stop("S must be a single simplex or an array of simplices")
-if( !is.function(f) ) stop("argument f must be a function")
-tmp <- dim(S); n <- tmp[1]; m <- tmp[2]-1; nS <- tmp[3]
+if( !is.array(S) | (length(dim(S)) != 3) ) stop("S must be a single simplex or an array of simplices")
+dimS <- dim(S); n <- dimS[1]; m <- dimS[2]-1; nS <- dimS[3]
+if (n < 2) stop("dimension of the space is less than 2")
 if( m > n ) stop("invalid simplices: m > n")
 
 if( n == m ) { # region is a set of n-dim simplices inside R^n
@@ -123,7 +125,6 @@ if( n == m ) { # region is a set of n-dim simplices inside R^n
 
   # integrate transformed f over transformed simplices
   if (m==1) {   # evaluate a line integral
-    if( partitionInfo ) { warning("partition information is not available for 1-dim/line integrals") }
     # define the transformed function which evaluates the original function f(x) at 
     # multiple points in R^n, returning multiple values.
     transformedF <- function( u ) { 
@@ -138,7 +139,7 @@ if( n == m ) { # region is a set of n-dim simplices inside R^n
       }
       return(y) }
             
-    a <- integrate.vector.fn( n, transformedS, fDim, transformedF, maxEvals, absError, tol )
+    a <- integrate.vector.fn( transformedS, fDim, transformedF, maxEvals, absError, tol, partitionInfo )
     
   } else {  # evaluate m-dim. integral where 2 <= m < n
     # define the transformed function which evaluates the original function f(x) at a 
@@ -159,28 +160,32 @@ if (m==1) { # in univariate case, just return result of integrate.vector.fn
   if (partitionInfo) {
     result <-  list(integral=a$VL, estAbsError=a$AE, functionEvaluations=a$NV, 
             returnCode=a$FL, subsimplices=a$VRTS, subsimplicesIntegral=a$VLS, 
-            subsimplicesAbsError=a$AES, subsimplicesVolume=a$VOL ) 
-    if( m < n ) {
-      # the returned partition info applies to transformed simplices,
-      # translate those simplices back to the original coordinates. 
-      n3 <- dim(result$subsimplics)[3]
-      newSubsimplices <- array( 0.0, dim=c(n,m+1,n3) )
-      for (i in 1:n3) {
-        for (j in 1:(m+1)) {
-          b <- original.coordinates( result$subsimplices[,j,i], S )
-          newSubsimplices[,j,i] <- b$x
-        }
-        subsimplicesVolume[b$i] <- JacobianCoef[b$i]*subsimplicesVolume[b$i]
-      }
-      result$subsimplices <- newSubsimplices
-    }          
+            subsimplicesAbsError=a$AES, subsimplicesVolume=a$VOL )
   } else {
     result <-  list(integral=a$VL, estAbsError=a$AE, functionEvaluations=a$NV, 
-            returnCode=a$FL ) 
+            returnCode=a$FL )
   }  
-  # convert returnCode to a message string
-  result$message <- adsimp.return.message( result$returnCode )  
 }
+
+if(result$returnCode == 0) {
+  if (partitionInfo & ( m < n )) {
+    # the current partition info applies to transformed simplices,
+    # translate those simplices back to the original coordinates. 
+    n3 <- dim(result$subsimplices)[3]
+    newSubsimplices <- array( 0.0, dim=c(n,m+1,n3) )
+    for (i in 1:n3) {
+      for (j in 1:(m+1)) {
+        b <- original.coordinates( result$subsimplices[,j,i], S )
+        newSubsimplices[,j,i] <- b$x
+      }
+      result$subsimplicesVolume[b$i] <- JacobianCoef[b$i]*result$subsimplicesVolume[b$i]
+    }
+    result$subsimplices <- newSubsimplices        
+  }    
+}
+
+# convert returnCode to a message string
+result$message <- adsimp.return.message( result$returnCode )  
 
 return(result) }
 ################################################################################
@@ -193,16 +198,18 @@ if (rcode == 2) msg <- "error: integRule < 0 or integRule > 4"
 if (rcode == 3) msg <- "error: dimension n of the space < 2"
 if (rcode == 4) msg <- "error: fDim = dimension of f < 1"
 if (rcode == 5) msg <- "error: absError < 0 and tol < 0"
-if ((rcode < 0) || (rcode > 5)) msg <- paste("error: unknown return code = ",rcode ) 
+if ((rcode < 0) | (rcode > 5)) msg <- paste("error: unknown return code = ",rcode ) 
 
 return(msg) }
 ################################################################################
-integrate.vector.fn <- function( n, intervals, fDim, f, maxEvals, absError, tol ){
+integrate.vector.fn <- function( intervals, fDim, f, maxEvals, absError, tol, partitionInfo=FALSE ){
 # Evaluate an integral of a vector valued function f(x)=(f[1](x),...,f[fDim](x)) of a real 
 # variable x (not a vector) over a list of intervals.  The built-in R function integrate 
 # uses quadpack function dqags when lower and upper are both finite, and that appears
 # to evaluate f at 21 points each time. 
 dqags.num.points <- 21L
+
+if( !is.function(f) ) { stop("first argument is not a function" ) }
 
 # define function to return a single coordinate of vector valued f(x)
 # note that x will generally be a vector of points in this univariate example
@@ -214,6 +221,10 @@ n.intervals <- dim(intervals)[3]
 max.subdiv <- as.integer( maxEvals/dqags.num.points )
 abs.tol <- absError/n.intervals
 y <- rep(0.0,fDim)
+if (partitionInfo) { 
+  y.partition <- matrix( 0.0, nrow=fDim, ncol=n.intervals) 
+  est.abs.error.partition <- y.partition
+}
 est.abs.error <- rep(0.0,fDim)
 actual.subdiv <- rep( 0L, fDim )
 
@@ -227,6 +238,10 @@ for (i in 1:fDim) {
     y[i] <- y[i] + tmp$value
     est.abs.error[i] <- est.abs.error[i] + tmp$abs.error
     actual.subdiv[i] <- actual.subdiv[i] + tmp$subdivisions
+    if (partitionInfo) { 
+      y.partition[i,j] <- y.partition[i,j] + tmp$value 
+      est.abs.error.partition[i,j] <- est.abs.error.partition[i,j]+tmp$abs.error
+    }    
   }
 }
 
@@ -234,6 +249,13 @@ result <-  list(integral=y, estAbsError=est.abs.error,
                 functionEvaluations=dqags.num.points*sum(actual.subdiv), 
                 returnCode=ifelse(tmp$message=="OK",0L,-1L), 
                 message=tmp$message )
+                
+if(partitionInfo) {
+  result$subsimplices <- intervals
+  result$subsimplicesIntegral <- y.partition
+  result$subsimplicesAbsError <- est.abs.error.partition
+  result$subsimplicesVolume <- intervals[1,2,]-intervals[1,1,]
+}
 return(result)}
 ################################################################################
 original.coordinates <- function( u, S ) {
@@ -340,11 +362,12 @@ if (method=="GM") {
     transformedF <- function( u ) { 
       b <- original.coordinates( u, S )
       y <- JacobianCoef[b$i] * evalPoly( b$x, p )
-      #cat("transormedF: b$x=",b$x,"  b$i=",b$i, "  y=",y,"\n")    
       return(y) }
     
     for (i in 1:k) {   
-      a <- grnmol( transformedF, transformedS[ , , i], gm.order ) 
+      curS <- transformedS[ , , i]
+      if (!is.matrix(curS)) { curS <- matrix( curS, nrow=1 ) }
+      a <- grnmol( transformedF, curS, gm.order ) 
       integral <- integral + a$Q[gm.order+1]
       functionEvaluations <- functionEvaluations + a$nv
     }
@@ -475,7 +498,6 @@ if (q == 0) { # constant terms are treated separately
       val <- evalPoly( tmp, p, useTerm )
       total <- total + prod(eps) * val
       count <- count + 1
-      #cat(" f(x)=",val, "  x=",tmp, "  ", count, "  i=",i,"  eps=",eps,"\n") #  optional trace statement
       j <- nextIntBaseB( j, b=2 )
     }
     i <- nextIndexLA( i, b=m+1 )
@@ -484,26 +506,37 @@ if (q == 0) { # constant terms are treated separately
 return( list(integral=const*total, functionEvaluations=count) ) }
 ################################################################################
 SimplexVolume <- function( S ){
-# compute the volume of the n-dim simplex S in R^n.  S is specified by an 
-# n x (n+1) matrix, with the columns of S giving the vertices of the simplex.  
+# compute the volume of the n-dim simplex S in R^n.  S is an n x (n+1) matrix, 
+# with the columns of S giving the vertices of the simplex.  
+# For S=CanonicalSimplex(n), the volume is 1/n!
 
-stopifnot( is.matrix(S), nrow(S) > 1, ncol(S) == nrow(S)+1 )
+stopifnot( is.matrix(S), nrow(S) >= 1, ncol(S) == nrow(S)+1 )
 n <- nrow(S)
 V <- S[ ,-1] - matrix( S[,1], nrow=n,ncol=n ) # n x n matrix
 return( abs( det(V) )/factorial(n) ) }
+################################################################################
+SimplexSurfaceArea <- function( S3 ){
+# compute the surface area of the (n-1)-dim simplex S3 in R^n.  S3 is an 
+# n x n matrix, with the columns of S3 giving the vertices of the simplex.  
+# For S3 = UnitSimplexV(n), 
+#   SimplexSurfaceArea(UnitSimplexV(n))/SimplexVolume( CanonicalSimplex(n-1) ) 
+#      = JacobianS2Canonical(SimplexSurfaceArea(UnitSimplexV(n)))= sqrt(n)
+
+stopifnot( is.matrix(S3), nrow(S3) >= 1, ncol(S3) == nrow(S3) )
+n <- nrow(S3)
+return( JacobianS2Canonical(S3)*SimplexVolume(CanonicalSimplex(n-1)) ) }
 ################################################################################
 JacobianS2Canonical <- function( S2 ){
 # compute the Jacobian of transformation between the m-dimensional simplex S2 
 # (sitting inside R^n) and the canonical simplex in R^m.
 # S2 is an n x (m+1) matrix, with columns of S2 giving the vertices of the simplex.
-# Method is to compute the Gram matrix G=t(V) %*% V, where V is as below.
-# This can be used to find the m-dim. volume of an m-simplex S2 by
-# JacobianS2Canonical(S2)/factorial(m).
+# The method is to compute the Gram matrix G=t(V) %*% V, where V is as below.
 
 stopifnot( is.matrix(S2), nrow(S2) > 1, ncol(S2) <= nrow(S2)+1 )
 n <- nrow(S2); m <- ncol(S2)-1
 V <- S2[ ,-1] - matrix( S2[,1], nrow=n,ncol=m ) # an n x m matrix
-return( sqrt( det( t(V) %*% V ) ) ) }
+
+return( sqrt( abs( det( t(V) %*% V ) ) ) ) }
 ################################################################################
 CanonicalSimplex <- function( n ) {
 # return the vertices of the canonical simplex in R^n, the n-dim. simplex with
@@ -512,8 +545,8 @@ CanonicalSimplex <- function( n ) {
 
 return( cbind( rep(0.0,n), diag(rep(1.0,n)) ) ) }
 ################################################################################
-UnitSimplex <- function( n ) {
-# return the vertices of the unit simplex in R^n, the (n-1) dim. simplex with
+UnitSimplexV <- function( n ) {
+# return the vertices (V-representaion) of the unit simplex in R^n, the (n-1) dim. simplex with
 # vertices the unit vectors e[1],...,e[n].
 
 return( diag(rep(1.0,n)) ) }
@@ -533,7 +566,7 @@ repeat {
   if (next.n[k] >= b) { next.n[k] <- 0;  carry <- TRUE
   } else { carry <- FALSE }
   k <- k-1
-  if ( !carry || (k==0 ) ) break
+  if ( !carry | (k==0 ) ) break
 }
 if (carry) { next.n <- c(1L,next.n) }
 return( next.n ) }
@@ -549,7 +582,7 @@ ones <- rep( 1L, d )
 next.n <- current.n - ones # subtract off the initial ones
 repeat {
   next.n <- nextIntBaseB( next.n, b )
-  if ( all( diff(next.n) >= 0) || (length(next.n) > d ) ) break
+  if ( all( diff(next.n) >= 0) | (length(next.n) > d ) ) break
 }
 if (length(next.n) > d) { next.n <- rep( NA, d ) }
 else { next.n <- next.n + ones }
