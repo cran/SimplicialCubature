@@ -36,17 +36,10 @@ Version history:
 \item 1.0.1  original package
 \item 1.1  fix an incorrect test for dimension=1 in \code{SimplexVolume}; add functions \code{SimplexSurfaceArea}.  Rename function 
    \code{UnitSimplex} to \code{UnitSimplexV} to eliminate name conflict with function in package \code{mvmesh}.
+\item 1.2 miscellaneous small changes.
 }
 }
-\details{
-\tabular{ll}{
-Package: \tab SimplicialCubature\cr
-Type: \tab Package\cr
-Version: \tab 1.1\cr
-Date: \tab 2016-01-05\cr
-License: \tab GPL (>= 3) \cr
-}
-}
+
 \author{
 John P. Nolan, with R translations of \code{adsimp} code by Alan Genz
 

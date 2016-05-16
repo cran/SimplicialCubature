@@ -17,7 +17,7 @@ integrateSimplexPolynomial(p, S, method="GM")
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{p}{
-a single polynomial, defined though function polyDefine.
+a single polynomial, defined though function definePoly.
 }
   \item{S}{Either a single simplex, specified by an n x (m+1) matrix with the columns
 S[,1],...,S[,n+1] giving the vertices of the simplex, or a n x (m+1) x k array with

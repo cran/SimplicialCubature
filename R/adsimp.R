@@ -6,7 +6,7 @@ adsimp <- function( ND, VRTS, NF, F, MXFS, EA, ER, KEY, partitionInfo=FALSE ){
 #   contact info and copyright information.
 # Translated by John Nolan, jpnolan@american.edu, 18 Aug. 2014
 #
-# The R version has one change:
+# The R version has one change in functionality:
 #    Added new argument partitionInfo; if FALSE, it is ignored. If TRUE, the 
 #    function returns the following information about the subdivision of the 
 #    original simplices.

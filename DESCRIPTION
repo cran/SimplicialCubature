@@ -1,9 +1,9 @@
 Package: SimplicialCubature
 Type: Package
 Title: Integration of Functions Over Simplices
-Version: 1.1
-Date: 2016-01-05
-Author: John P. Nolan, with parts based on code by Alan Genz
+Version: 1.2
+Date: 2016-05-14
+Author: John P. Nolan, with parts adapted from Fortran and matlab code by Alan Genz
 Maintainer: John P. Nolan  <jpnolan@american.edu>
 Depends: R (>= 3.0)
 Description: Provides methods to integrate functions over m-dimensional simplices
@@ -12,6 +12,6 @@ Description: Provides methods to integrate functions over m-dimensional simplice
  are calculated in certain cases.
 License: GPL (>= 2)
 NeedsCompilation: no
-Packaged: 2016-01-05 20:24:29 UTC; John
+Packaged: 2016-05-14 19:58:27 UTC; John
 Repository: CRAN
-Date/Publication: 2016-01-05 22:29:06
+Date/Publication: 2016-05-16 15:41:03
