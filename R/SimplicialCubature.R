@@ -129,7 +129,7 @@ if( n == m ) { # region is a set of n-dim simplices inside R^n
     # multiple points in R^n, returning multiple values.
     transformedF <- function( u ) { 
       # in 1-dim case, u is a vector of distinct points in R.
-      # since the function integrate.vector.fn does one interval at at
+      # since the function adaptIntegrateVectorFunc does one interval at a
       # time, all points in u must be in the same original parition interval.
       nu <- length(u)  
       y <- matrix(0.0,nrow=fDim,ncol=nu)
@@ -139,13 +139,13 @@ if( n == m ) { # region is a set of n-dim simplices inside R^n
       }
       return(y) }
             
-    a <- integrate.vector.fn( transformedS, fDim, transformedF, maxEvals, absError, tol, partitionInfo )
+    a <- adaptIntegrateVectorFunc( transformedS, fDim, transformedF, maxEvals, absError, tol, partitionInfo, ... )
     
   } else {  # evaluate m-dim. integral where 2 <= m < n
     # define the transformed function which evaluates the original function f(x) at a 
     # a single point in R^n, returning a single number
     transformedF <- function( u ) { 
-      b <- original.coordinates( u, S )
+      b <- original.coordinates( u, S )    
       y <- JacobianCoef[b$i] * f( b$x, ... )
       return(y) }
             
@@ -154,7 +154,7 @@ if( n == m ) { # region is a set of n-dim simplices inside R^n
   }
 }
 
-if (m==1) { # in univariate case, just return result of integrate.vector.fn 
+if (m==1) { # in univariate case, just return result of adaptIntegrateVectorFunc
   result <- a
 } else { # rename results and return to caller
   if (partitionInfo) {
@@ -202,8 +202,8 @@ if ((rcode < 0) | (rcode > 5)) msg <- paste("error: unknown return code = ",rcod
 
 return(msg) }
 ################################################################################
-integrate.vector.fn <- function( intervals, fDim, f, maxEvals, absError, tol, partitionInfo=FALSE ){
-# Evaluate an integral of a vector valued function f(x)=(f[1](x),...,f[fDim](x)) of a real 
+adaptIntegrateVectorFunc <- function( intervals, fDim, f, maxEvals, absError, tol, partitionInfo=FALSE,... ){
+# Evaluate integral of a vector valued function f(x)=(f[1](x),...,f[fDim](x)) of a real 
 # variable x (not a vector) over a list of intervals.  The built-in R function integrate 
 # uses quadpack function dqags when lower and upper are both finite, and that appears
 # to evaluate f at 21 points each time. 
@@ -212,10 +212,16 @@ dqags.num.points <- 21L
 if( !is.function(f) ) { stop("first argument is not a function" ) }
 
 # define function to return a single coordinate of vector valued f(x)
-# note that x will generally be a vector of points in this univariate example
+# This is inefficient, but 
 newF <- function( x, which.coord ) { 
-  if(length(x)!=dqags.num.points) { warning(paste("integrate.vector.fn: length(x) != ",dqags.num.points)) }  # debug
-  f(x)[which.coord,] }
+  # make sure right number of values requested
+  if(length(x)!=dqags.num.points) { warning(paste("adaptIntegrateVectorFunc: length(x) != ",dqags.num.points)) }  
+  x <- as.vector(x)
+  y <- rep(0.0,length(x))
+  for (j in 1:length(x)) {
+    y[j] <- f(x[j],...)[which.coord]
+  }
+  return(y) }
 
 n.intervals <- dim(intervals)[3]
 max.subdiv <- as.integer( maxEvals/dqags.num.points )

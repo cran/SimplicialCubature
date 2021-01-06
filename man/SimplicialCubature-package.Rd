@@ -17,7 +17,8 @@ There are exact methods for polynomials and
 The two main functions are:
 
 \code{\link{adaptIntegrateSimplex}} - integrate a general (possibly vector valued) 
-function over a simplex using the method of Genz and Cools.
+function over a simplex using the method of Genz and Cools.  It is expected that these 
+methods will yield several significant digits, but not many digits of precision.
 
 \code{\link{integrateSimplexPolynomial}} - integrate a single polynomial exactly over a simplex using either 
 the Grundmann-Moller method or the Lasserre-Avrachenkov method.
@@ -26,7 +27,7 @@ The naming of the functions, arguments, and return values deliberately mimics th
 \code{cubature} (for integrating over hyper-rectangles) and \code{SphericalCubature} (for integrating
 over spheres and balls).
 
-Please let me know if you find any mistakes.  I will try to fix bugs promptly.
+Please let me know if you find any mistakes.  I will try to fix bugs when time is available.
 
 Constructive comments for improvements are welcome;  
 actually implementing any suggestions will be dependent on time constraints.
@@ -37,6 +38,8 @@ Version history:
 \item 1.1  fix an incorrect test for dimension=1 in \code{SimplexVolume}; add functions \code{SimplexSurfaceArea}.  Rename function 
    \code{UnitSimplex} to \code{UnitSimplexV} to eliminate name conflict with function in package \code{mvmesh}.
 \item 1.2 miscellaneous small changes.
+\item 1.3 Eliminate internal function integrate.vector.fn and replace with a slightly different function adaptIntegrateVectorFunc.  This new
+function is used in the new version of package SphericalCubature.
 }
 }
 

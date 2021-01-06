@@ -1,6 +1,6 @@
 \name{adaptIntegrateSimplex}
 \alias{adaptIntegrateSimplex}
-\alias{integrate.vector.fn}
+\alias{adaptIntegrateVectorFunc}
 \alias{original.coordinates}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
@@ -14,13 +14,15 @@ f can be a vector valued function and S can be a list of simplices.
 \usage{
 adaptIntegrateSimplex(f, S, fDim = 1L, maxEvals = 10000L, absError = 0, tol = 1e-05, 
      integRule = 3L, partitionInfo = FALSE, ...)
-integrate.vector.fn( intervals, fDim, f, maxEvals, absError, tol, partitionInfo=FALSE  )
+adaptIntegrateVectorFunc( intervals, fDim, f, maxEvals, absError, tol, 
+     partitionInfo=FALSE, ...  )
 original.coordinates( u, S  )           
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{f}{
-a function of n-variables (where n is determined by S) or a vector valued function (if fDim > 1).
+a function of n-variables (where n is determined by S) or a vector valued function (if fDim > 1). During the 
+cubature process, f will be called with a single point x and it is assumed f(x) returns a vector of length fDim.
 }
   \item{S}{
 a simplex or list of simplices that specify the region of integration.  
@@ -71,10 +73,15 @@ If 1 < m < n, then the integral is evaluated by mapping the m-simplex in R^n  to
 the canonical simplex in m-dimensional space, using function adsimp on that `full' m-dimensional integral, and correcting
 with the Jacobian of the transformation.  
 
-If m=1, the built-in R function integrate (based on QUADPACK 1-dimensional adaptive quadrature) 
-is used to evaluate the line integral.  Since it does not provide access to the final subdivision,
+If m=1, the function adaptIntegrateVectorFunc is used to evaluate the line intergral.  
+It uses the built-in R function integrate (from QUADPACK 1-dimensional adaptive quadrature) 
+to evaluate the line integral.  Since it does not provide access to the final subdivision,
 partitionInfo=TRUE in the univariate case returns the original partition information.  So, if a fine
-parition is desired in the m=1 case, start with a fine partition. 
+parition is desired in the m=1 case, start with a fine partition.  For consistentcy with adaptIntegrateSimplex,
+it is assumed that the integrand function f computes fDim values when called with a single x value.  Since
+the integrate function does not handle vector integrands, the ingration is done one coordinate at a time.
+This will be inefficient when fDim > 1 and evaluation of f is complicated; consistent behavior of the integrand function was choosen over
+efficiency.
 }
 
 \value{A list containing:
@@ -104,14 +111,15 @@ See references to Genz and Cool (2003) in \code{\link{SimplicialCubature-package
 
 When m > 1 and fDim > 1, adsimp uses the same grid for each coordinate of f.
 
-When m=1, adsimp does not handle the line integral case, 
-and the built-in R function integrate is used to evaluate the integral.  In this 1-dimensional
-case, no partition information is available (integrate does not provide that information) and if fDim > 1, the
+When m=1 and fDim > 1, the
 components of the integral are evaluated independently, with an upper limit of maxEvals function evaluations for
 each component.  This means that 
 (a) a different grid may be used for each component, 
 and (b) the return variable functionEvaluations is the sum of the number of function evaluations for each component;
 it may be up to maxEvals*fDim.
+
+In keeping with Genz's original code, the vertices of the simplex described by S are column vectors, not
+row vectors.
 }
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
